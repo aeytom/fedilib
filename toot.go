@@ -37,14 +37,16 @@ func (s *Fedi) TootWithImageReader(toot mastodon.Toot, img io.Reader, alt string
 // TootWithImage posts a new status with image (unless empty)
 func (s *Fedi) TootWithImage(toot mastodon.Toot, ipath string) (err error) {
 	var ifile *os.File
-	defer ifile.Close()
 	if ipath != "" {
 		s.Log().Println("post status with image: ", toot.Status, ipath)
 		ifile, err = os.Open(ipath)
 		if err != nil {
 			return err
 		}
+		defer ifile.Close()
+		err = s.TootWithImageReader(toot, ifile, ipath)
+	} else {
+		err = s.TootWithImageReader(toot, nil, ipath)
 	}
-	err = s.TootWithImageReader(toot, ifile, ipath)
 	return err
 }
